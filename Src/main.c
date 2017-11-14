@@ -9,7 +9,6 @@
 #include "stm32f4xx_hal.h"
 #include "init.h"
 /* Private variables ---------------------------------------------------------*/
-
 /* Private variables ---------------------------------------------------------*/
 
 /* Private function prototypes -----------------------------------------------*/
