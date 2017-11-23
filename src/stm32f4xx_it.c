@@ -41,8 +41,45 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f4xx.s).                    */
 /******************************************************************************/
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart6;
+extern DMA_HandleTypeDef hdma_usart6_rx;
+extern DMA_HandleTypeDef hdma_usart6_tx;
 
-/* USER CODE BEGIN 1 */
+/**
+  * @brief  This function handles External line 15_10 interrupt request.
+  * @param  None
+  * @retval None
+  */
+void EXTI15_10_IRQHandler(void)
+{
+  /* As the following address is invalid (not mapped), a Hardfault exception
+  will be generated with an infinite loop and when the WWDG counter falls to 63
+  the WWDG reset occurs */
+  *(__IO uint32_t *) 0xA0003000 = 0xFF;
+}
 
-/* USER CODE END 1 */
+/**
+* @brief This function handles USART2 global interrupt.
+*/
+void USART2_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&huart2);
+}
+
+/**
+* @brief This function handles DMA2 stream5 global interrupt.
+*/
+void DMA2_Stream2_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_usart6_rx);
+}
+
+/**
+* @brief This function handles DMA2 stream7 global interrupt.
+*/
+void DMA2_Stream6_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_usart6_tx);
+}
 

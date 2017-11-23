@@ -6,74 +6,197 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
+#include "main.h"
 #include "stm32f4xx_hal.h"
 #include "init.h"
+#include "gps.h"
 /* Private variables ---------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 
+
 /* Private function prototypes -----------------------------------------------*/
 
-int main(void)
-{
+extern WWDG_HandleTypeDef hwwdg;
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart6;
 
-  /* MCU Configuration----------------------------------------------------------*/
+char pars[80];
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+int main(void) {
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* MCU Configuration----------------------------------------------------------*/
+	uint32_t delay;
 
-  /* Initialize all configured peripherals */
-  GPIO_Init();
-  I2C1_Init();
-  SPI1_Init();
-  USART1_Init();
-  WWDG_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  while (1)
-  {
-  }
+	/* Configure the system clock */
+	SystemClock_Config();
+	/* Initialize all configured peripherals */
+	GPIO_Init();
+	BSP_LED_Init(LED2);
 
+	UART2_Init();
+	DMA_Init();
+	UART6_Init();
+
+	imprimir("Comienzo programa\r\n");
+
+	inicializar_gps();
+
+
+//  I2C1_Init();
+//  SPI1_Init();
+//
+	/*##-1- Check if the system has resumed from WWDG reset ####################*/
+	if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST) != RESET) {
+		/* WWDGRST flag set: Turn LED2 on */
+		BSP_LED_On(LED2);
+
+		/* Insert 4s delay */
+		HAL_Delay(4000);
+
+		/* Prior to clear WWDGRST flag: Turn LED2 off */
+		BSP_LED_Off(LED2);
+	}
+
+	/* Clear reset flags in any case */
+	__HAL_RCC_CLEAR_RESET_FLAGS();
+
+	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
+
+	WWDG_Init();
+//
+//	/* calculate delay to enter window. Add 1ms to secure round number to upper number  */
+	delay = TimeoutCalculation((hwwdg.Init.Counter - hwwdg.Init.Window) + 1) + 1;
+
+	while (1) {
+		/* Toggle LED2 */
+		BSP_LED_Toggle(LED2);
+		/* Insert calculated delay */
+		HAL_Delay(delay);
+//		HAL_Delay(500);
+
+		if (HAL_WWDG_Refresh(&hwwdg) != HAL_OK) {
+			Error_Handler();
+		}
+	}
 }
 
-/** System Clock Configuration
-*/
+void imprimir(char* msg){
+	HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 0xFFFF);
+
+}
+/**
+  * @brief  Timeout calculation function.
+  *         This function calculates any timeout related to
+  *         WWDG with given prescaler and system clock.
+  * @param  timevalue: period in term of WWDG counter cycle.
+  * @retval None
+  */
+static uint32_t TimeoutCalculation(uint32_t timevalue)
+{
+  uint32_t timeoutvalue = 0;
+  uint32_t pclk1 = 0;
+  uint32_t wdgtb = 0;
+
+  /* considering APB divider is still 1, use HCLK value */
+  pclk1 = HAL_RCC_GetPCLK1Freq();
+
+  /* get prescaler */
+  wdgtb = (1 << ((hwwdg.Init.Prescaler) >> 7)); /* 2^WDGTB[1:0] */
+
+  /* calculate timeout */
+  timeoutvalue = ((4096 * wdgtb * timevalue) / (pclk1 / 1000));
+
+  return timeoutvalue;
+}
+
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow :
+  *            System Clock source            = PLL (HSI)
+  *            SYSCLK(Hz)                     = 100000000
+  *            HCLK(Hz)                       = 100000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 2
+  *            APB2 Prescaler                 = 1
+  *            HSI Frequency(Hz)              = 16000000
+  *            PLL_M                          = 16
+  *            PLL_N                          = 400
+  *            PLL_P                          = 4
+  *            PLL_Q                          = 7
+  *            VDD(V)                         = 3.3
+  *            Main regulator output voltage  = Scale2 mode
+  *            Flash Latency(WS)              = 3
+  * @param  None
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
-
-  RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_OscInitTypeDef RCC_OscInitStruct;
 
-  __PWR_CLK_ENABLE();
+  /* Enable Power Control clock */
+  __HAL_RCC_PWR_CLK_ENABLE();
 
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  /* The voltage scaling allows optimizing the power consumption when the device is
+     clocked below the maximum system frequency, to update the voltage scaling value
+     regarding system frequency refer to product datasheet.  */
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
 
+  /* Enable HSI Oscillator and activate PLL with HSI as source */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = 16;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  HAL_RCC_OscConfig(&RCC_OscInitStruct);
+  RCC_OscInitStruct.HSICalibrationValue = 0x10;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 16;
+  RCC_OscInitStruct.PLL.PLLN = 400;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
+  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
+     clocks dividers */
+  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
+  if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+//  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+//
+//  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+//
+//  /* SysTick_IRQn interrupt configuration */
+//  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @param  None
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* Turn LED3 on */
+  BSP_LED_On(LED2);
+
+  while(1)
+  {
+  }
+}
 
 #ifdef USE_FULL_ASSERT
 

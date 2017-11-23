@@ -1,5 +1,7 @@
-init.c:17:6:I2C1_Init	8	static
-init.c:34:6:SPI1_Init	8	static
-init.c:54:6:USART1_Init	8	static
-init.c:71:6:WWDG_Init	8	static
-init.c:84:6:GPIO_Init	16	static
+init.c:19:6:GPIO_Init	24	static
+init.c:30:6:UART2_Init	8	static
+init.c:46:6:UART6_Init	8	static
+init.c:64:6:DMA_Init	16	static
+init.c:78:6:SPI1_Init	8	static
+init.c:98:6:I2C1_Init	8	static
+init.c:115:6:WWDG_Init	8	static
