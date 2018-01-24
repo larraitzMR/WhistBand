@@ -47,6 +47,7 @@ MEMORY
   FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 256K
   RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 128K
   MEMORY_B1 (rx)  : ORIGIN = 0x60000000, LENGTH = 0K
+  DATA (rwx)      : ORIGIN = 0x08040000, LENGTH = 128k
 }
 
 /* Define output sections */
@@ -92,6 +93,13 @@ SECTIONS
     *(.ARM.exidx*)
     __exidx_end = .;
   } >FLASH
+  
+  .user_data :
+  {
+    . = ALIGN(4);
+     KEEP (*(.user_data))
+    . = ALIGN(4);
+  } > DATA
 
   .preinit_array     :
   {

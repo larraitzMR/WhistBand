@@ -1,0 +1,6 @@
+stm32f4xx_lp_modes.c:82:6:SleepMode_Measure	56	static
+stm32f4xx_lp_modes.c:142:6:StopMode_Measure	48	static
+stm32f4xx_lp_modes.c:237:6:StandbyMode_Measure	16	static
+stm32f4xx_lp_modes.c:275:6:StandbyRTCMode_Measure	8	static
+stm32f4xx_lp_modes.c:343:6:StandbyRTCBKPSRAMMode_Measure	8	static
+stm32f4xx_lp_modes.c:407:13:SYSCLKConfig_STOP	80	static

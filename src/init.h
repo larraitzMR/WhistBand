@@ -14,3 +14,4 @@ void UART2_Init(void);
 void UART6_Init(void);
 void DMA_Init(void);
 void WWDG_Init(void);
+void LP_Init(void);

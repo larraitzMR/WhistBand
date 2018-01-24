@@ -9,6 +9,10 @@
 
 void inicializar_gps(void);
 void leer_parsing(void);
+void guardar_coordenadas(char buffer[]);
+void obtener_coordenadas() ;
+
+
 
 struct datosGPS {
 	char hora[8];

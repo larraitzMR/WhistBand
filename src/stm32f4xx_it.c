@@ -43,8 +43,22 @@ void SysTick_Handler(void)
 /******************************************************************************/
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart6;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart1_tx;
 extern DMA_HandleTypeDef hdma_usart6_rx;
 extern DMA_HandleTypeDef hdma_usart6_tx;
+extern SPI_HandleTypeDef hspi1;
+extern RTC_HandleTypeDef RTCHandle;
+
+/**
+  * @brief  This function handles RTC Auto wake-up interrupt request.
+  * @param  None
+  * @retval None
+  */
+void RTC_WKUP_IRQHandler(void)
+{
+  HAL_RTCEx_WakeUpTimerIRQHandler(&RTCHandle);
+}
 
 /**
   * @brief  This function handles External line 15_10 interrupt request.
@@ -56,7 +70,8 @@ void EXTI15_10_IRQHandler(void)
   /* As the following address is invalid (not mapped), a Hardfault exception
   will be generated with an infinite loop and when the WWDG counter falls to 63
   the WWDG reset occurs */
-  *(__IO uint32_t *) 0xA0003000 = 0xFF;
+//  *(__IO uint32_t *) 0xA0003000 = 0xFF;
+	 HAL_GPIO_EXTI_IRQHandler(KEY_BUTTON_PIN);
 }
 
 /**
@@ -81,5 +96,30 @@ void DMA2_Stream2_IRQHandler(void)
 void DMA2_Stream6_IRQHandler(void)
 {
   HAL_DMA_IRQHandler(&hdma_usart6_tx);
+}
+
+/**
+* @brief This function handles SPI1 global interrupt.
+*/
+void SPI1_IRQHandler(void)
+{
+  HAL_SPI_IRQHandler(&hspi1);
+}
+
+/**
+* @brief This function handles DMA2 stream5 global interrupt.
+*/
+void DMA2_Stream5_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_usart1_rx);
+}
+
+/**
+* @brief This function handles DMA2 stream7 global interrupt.
+*/
+void DMA2_Stream7_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(&hdma_usart1_tx);
+
 }
 

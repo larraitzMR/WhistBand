@@ -1,0 +1,4 @@
+gprs.c:23:6:send_ATCommand	24	static
+gprs.c:31:6:send_ATCommand_DMA	24	static
+gprs.c:56:6:read_buffer	8	static
+gprs.c:66:6:leerBuffer	8	static

@@ -9,6 +9,7 @@
 #include "main.h"
 #include <string.h>
 
+extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart6;
 
 char parsing[80];
@@ -42,6 +43,7 @@ uint8_t init_VTG[] = "$PSRF103,05,00,01,01*20\r\n";
 uint8_t deinit_VTG[] = "$PSRF103,05,00,00,01*21\r\n";
 
 __IO ITStatus UartReady = RESET;
+__IO ITStatus Uart1Ready = RESET;
 
 void inicializar_gps(void)
 {
@@ -151,63 +153,63 @@ void obtener_coordenadas() {
 	//                              01:40:35 UTC| A=active
 	//                                          |  V=Void
 
-	if (strcmp(tipo, "GNRMC") == 0) {
-		if ((fechaOK == 0) && (*&nmea[9] != '\0')) {
-			fecha = *&nmea[9];
-			fecha = formatoFecha(fecha);
-			strcpy(GPS[numGPS].dia, fecha);
-			fechaOK = numGPS;
-		}
-
-		hora = *&nmea[1];
-		hora = formatoHora(hora);
-		latitud = *&nmea[3];
-		latitud = formatoLat(latitud);
-		latCoor = *&nmea[4];
-		longitud = *&nmea[5];
-		longitud = formatoLong(longitud);
-		longCoor = *&nmea[6];
-
-		strcpy(GPS[numGPS].datos.hora, hora);
-		strcpy(GPS[numGPS].datos.latitud, latitud);
-		strcpy(GPS[numGPS].datos.latCoor, latCoor);
-		strcpy(GPS[numGPS].datos.longitud, longitud);
-		strcpy(GPS[numGPS].datos.longCoor, longCoor);
-
-		numGPS++;
-		if (numGPS == 999) {
-			numGPS = 0;
-		}
-	}
-
-// http://www.gpsinformation.org/dale/nmea.htm#GGA
-// Example GPGGA
-// Array index -->        0   |      1       |     2     | 3 |    4       | 5 |     6     |       7     |     8     |    9   |  10  |     11	 |  12  |13|   14
-// Example     -->     $GPGGA ,  092152.000  , 4317.3578 , N , 00159.1794 , W ,     1	  ,		06	    ,    1.5    , -10.4  ,   M  ,    51.0	 ,   M  ,  , 0000*54
-// Description -->            |   Time UTC   | Latitude  |N/S| Longitude  |W/E|Fix quality|N. satellites|H.diluition|Altitude|Meters|Heigth geoid|Meters|  |checksum
-//                              09:21:52 UTC								  |1 = GPS fix
+//	if (strcmp(tipo, "GNRMC") == 0) {
+//		if ((fechaOK == 0) && (*&nmea[9] != '\0')) {
+//			fecha = *&nmea[9];
+//			fecha = formatoFecha(fecha);
+//			strcpy(GPS[numGPS].dia, fecha);
+//			fechaOK = numGPS;
+//		}
 //
-	else if (strcmp(tipo, "GPGGA") == 0) {
-		hora = *&nmea[1];
-		hora = formatoHora(hora);
-		latitud = *&nmea[2];
-		latitud = formatoLat(latitud);
-		latCoor = *&nmea[3];
-		longitud = *&nmea[4];
-		longitud = formatoLong(longitud);
-		longCoor = *&nmea[5];
-
-		strcpy(GPS[numGPS].datos.hora, hora);
-		strcpy(GPS[numGPS].datos.latitud, latitud);
-		strcpy(GPS[numGPS].datos.latCoor, latCoor);
-		strcpy(GPS[numGPS].datos.longitud, longitud);
-		strcpy(GPS[numGPS].datos.longCoor, longCoor);
-
-		numGPS++;
-		if (numGPS == 999) {
-			numGPS = 0;
-		}
-	}
+//		hora = *&nmea[1];
+//		hora = formatoHora(hora);
+//		latitud = *&nmea[3];
+//		latitud = formatoLat(latitud);
+//		latCoor = *&nmea[4];
+//		longitud = *&nmea[5];
+//		longitud = formatoLong(longitud);
+//		longCoor = *&nmea[6];
+//
+//		strcpy(GPS[numGPS].datos.hora, hora);
+//		strcpy(GPS[numGPS].datos.latitud, latitud);
+//		strcpy(GPS[numGPS].datos.latCoor, latCoor);
+//		strcpy(GPS[numGPS].datos.longitud, longitud);
+//		strcpy(GPS[numGPS].datos.longCoor, longCoor);
+//
+//		numGPS++;
+//		if (numGPS == 999) {
+//			numGPS = 0;
+//		}
+//	}
+//
+//// http://www.gpsinformation.org/dale/nmea.htm#GGA
+//// Example GPGGA
+//// Array index -->        0   |      1       |     2     | 3 |    4       | 5 |     6     |       7     |     8     |    9   |  10  |     11	 |  12  |13|   14
+//// Example     -->     $GPGGA ,  092152.000  , 4317.3578 , N , 00159.1794 , W ,     1	  ,		06	    ,    1.5    , -10.4  ,   M  ,    51.0	 ,   M  ,  , 0000*54
+//// Description -->            |   Time UTC   | Latitude  |N/S| Longitude  |W/E|Fix quality|N. satellites|H.diluition|Altitude|Meters|Heigth geoid|Meters|  |checksum
+////                              09:21:52 UTC								  |1 = GPS fix
+////
+//	else if (strcmp(tipo, "GPGGA") == 0) {
+//		hora = *&nmea[1];
+//		hora = formatoHora(hora);
+//		latitud = *&nmea[2];
+//		latitud = formatoLat(latitud);
+//		latCoor = *&nmea[3];
+//		longitud = *&nmea[4];
+//		longitud = formatoLong(longitud);
+//		longCoor = *&nmea[5];
+//
+//		strcpy(GPS[numGPS].datos.hora, hora);
+//		strcpy(GPS[numGPS].datos.latitud, latitud);
+//		strcpy(GPS[numGPS].datos.latCoor, latCoor);
+//		strcpy(GPS[numGPS].datos.longitud, longitud);
+//		strcpy(GPS[numGPS].datos.longCoor, longCoor);
+//
+//		numGPS++;
+//		if (numGPS == 999) {
+//			numGPS = 0;
+//		}
+//	}
 }
 
 /**
@@ -217,7 +219,12 @@ void obtener_coordenadas() {
   */
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
  {
-	if (UartHandle->Instance == USART6) {
+	if (UartHandle->Instance == USART1) {
+		(&huart1)->gState = HAL_UART_STATE_READY;
+		Uart1Ready = SET;
+		(&huart6)->RxState = HAL_UART_STATE_READY;
+	}
+	else if (UartHandle->Instance == USART6) {
 		(&huart6)->gState = HAL_UART_STATE_READY;
 		UartReady = SET;
 		(&huart6)->RxState = HAL_UART_STATE_READY;
@@ -232,11 +239,14 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 {
-	if (UartHandle->Instance == USART6) {
+	if (UartHandle->Instance == USART1) {
+		(&huart1)->RxState = HAL_UART_STATE_READY;
+		Uart1Ready = SET;
+	}
+	else if (UartHandle->Instance == USART6) {
 		(&huart6)->RxState = HAL_UART_STATE_READY;
 		imprimir(parsing);
 		guardar_coordenadas(parsing);
 		UartReady = SET;
-
 	}
 }

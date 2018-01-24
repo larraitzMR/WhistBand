@@ -10,6 +10,8 @@
 #include "stm32f4xx_hal.h"
 #include "init.h"
 #include "gps.h"
+//#include "stm32f4xx_lp_modes.h"
+#include <string.h>
 /* Private variables ---------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
@@ -22,8 +24,18 @@ void SystemClock_Config(void);
 extern WWDG_HandleTypeDef hwwdg;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart6;
+extern SPI_HandleTypeDef hspi1;
+/*Variable used for Erase procedure*/
+FLASH_EraseInitTypeDef EraseInitStruct;
 
+uint32_t SECTORError = 0;
 char pars[80];
+uint8_t datoFlash[16];
+uint8_t flash = 888;
+char *flash1 = "ESTO ES UN MENSAJE";
+char parsingGPS[5] = "HOLII";
+
+__attribute__((__section__(".user_data"))) const char userConfig[64];
 
 int main(void) {
 
@@ -35,55 +47,110 @@ int main(void) {
 
 	/* Configure the system clock */
 	SystemClock_Config();
-	/* Initialize all configured peripherals */
+
+//	strcpy(datoFlash, userConfig[0]);
+//
+//	Write_Flash(flash1);
+//	/* Initialize all configured peripherals */
+//	strcpy(datoFlash, userConfig[0]);
 	GPIO_Init();
 	BSP_LED_Init(LED2);
 
 	UART2_Init();
 	DMA_Init();
-	UART6_Init();
+//	UART6_Init();
+	UART1_Init();
 
-	imprimir("Comienzo programa\r\n");
+	imprimir("\r\nCOMIENZO PROGRAMA\r\n");
 
-	inicializar_gps();
+//	inicializar_gps();
 
+//	LP_Init();
+//
+//	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+//	HAL_Init();
+//
+//	/* Initialize all configured peripherals */
+//	GPIO_Init();
+//	UART2_Init();
+//	DMA_Init();
+//	UART6_Init();
+//
+//	inicializar_gps();
 
 //  I2C1_Init();
-//  SPI1_Init();
 //
 	/*##-1- Check if the system has resumed from WWDG reset ####################*/
-	if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST) != RESET) {
-		/* WWDGRST flag set: Turn LED2 on */
-		BSP_LED_On(LED2);
-
-		/* Insert 4s delay */
-		HAL_Delay(4000);
-
-		/* Prior to clear WWDGRST flag: Turn LED2 off */
-		BSP_LED_Off(LED2);
-	}
-
-	/* Clear reset flags in any case */
-	__HAL_RCC_CLEAR_RESET_FLAGS();
-
-	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
-
-	WWDG_Init();
+//	if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST) != RESET) {
+//		/* WWDGRST flag set: Turn LED2 on */
+//		BSP_LED_On(LED2);
+//
+//		/* Insert 4s delay */
+//		HAL_Delay(4000);
+//
+//		/* Prior to clear WWDGRST flag: Turn LED2 off */
+//		BSP_LED_Off(LED2);
+//	}
+//
+//	/* Clear reset flags in any case */
+//	__HAL_RCC_CLEAR_RESET_FLAGS();
+//
+//	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
+//
+//	WWDG_Init();
 //
 //	/* calculate delay to enter window. Add 1ms to secure round number to upper number  */
-	delay = TimeoutCalculation((hwwdg.Init.Counter - hwwdg.Init.Window) + 1) + 1;
+//	delay = TimeoutCalculation((hwwdg.Init.Counter - hwwdg.Init.Window) + 1) +  1;
+	read_buffer();
+
+	send_ATCommand_DMA("AT\r\n");
+	HAL_Delay(1000);
+//	leerBuffer();
+//	send_ATCommand_DMA("AT+CMGF=1\r\n");
+//	HAL_Delay(1000);
+//	leerBuffer();
+//	send_ATCommand_DMA("AT+CMGS=+34649103025\r\n");
+//	HAL_Delay(1000);
+//	leerBuffer();
+//	send_ATCommand_DMA("ieeeeeee\r\n");
+//	HAL_Delay(1000);
+//	leerBuffer();
+//	send_ATCommand_DMA("\x1A");
+//	HAL_Delay(1000);
+//	leerBuffer();
 
 	while (1) {
 		/* Toggle LED2 */
 		BSP_LED_Toggle(LED2);
+		//HAL_SPI_TransmitReceive(&hspi1, (uint8_t*)"HOLAAAA", (uint8_t *)pars, 7, 5000);
+//		imprimir("main loop");
 		/* Insert calculated delay */
-		HAL_Delay(delay);
-//		HAL_Delay(500);
+//		HAL_Delay(delay);
 
-		if (HAL_WWDG_Refresh(&hwwdg) != HAL_OK) {
-			Error_Handler();
-		}
+		HAL_Delay(3000);
+
+//		if (HAL_WWDG_Refresh(&hwwdg) != HAL_OK) {
+//			Error_Handler();
+//		}
 	}
+}
+
+uint32_t FlashAddress = 0x08040000;
+
+void Write_Flash(char *data)
+{
+	HAL_FLASH_Unlock();
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR);
+	/* Fill EraseInit structure*/
+	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
+	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
+	EraseInitStruct.Sector = FLASH_SECTOR_6;
+	EraseInitStruct.NbSectors = 1;
+	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SECTORError) != HAL_OK) {
+		Error_Handler();
+	}
+	HAL_FLASH_Program(TYPEPROGRAM_WORD, FlashAddress, (uint64_t)data);
+	HAL_FLASH_Lock();
 }
 
 void imprimir(char* msg){
@@ -97,7 +164,7 @@ void imprimir(char* msg){
   * @param  timevalue: period in term of WWDG counter cycle.
   * @retval None
   */
-static uint32_t TimeoutCalculation(uint32_t timevalue)
+uint32_t TimeoutCalculation(uint32_t timevalue)
 {
   uint32_t timeoutvalue = 0;
   uint32_t pclk1 = 0;

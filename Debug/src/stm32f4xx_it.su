@@ -1,5 +1,9 @@
 stm32f4xx_it.c:26:6:SysTick_Handler	8	static
-stm32f4xx_it.c:54:6:EXTI15_10_IRQHandler	4	static
-stm32f4xx_it.c:65:6:USART2_IRQHandler	8	static
-stm32f4xx_it.c:73:6:DMA2_Stream2_IRQHandler	8	static
-stm32f4xx_it.c:81:6:DMA2_Stream6_IRQHandler	8	static
+stm32f4xx_it.c:58:6:RTC_WKUP_IRQHandler	8	static
+stm32f4xx_it.c:68:6:EXTI15_10_IRQHandler	8	static
+stm32f4xx_it.c:80:6:USART2_IRQHandler	8	static
+stm32f4xx_it.c:88:6:DMA2_Stream2_IRQHandler	8	static
+stm32f4xx_it.c:96:6:DMA2_Stream6_IRQHandler	8	static
+stm32f4xx_it.c:104:6:SPI1_IRQHandler	8	static
+stm32f4xx_it.c:112:6:DMA2_Stream5_IRQHandler	8	static
+stm32f4xx_it.c:120:6:DMA2_Stream7_IRQHandler	8	static
