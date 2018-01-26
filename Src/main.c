@@ -25,14 +25,8 @@ extern WWDG_HandleTypeDef hwwdg;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart6;
 extern SPI_HandleTypeDef hspi1;
-/*Variable used for Erase procedure*/
-FLASH_EraseInitTypeDef EraseInitStruct;
 
-uint32_t SECTORError = 0;
 char pars[80];
-uint8_t datoFlash[16];
-uint8_t flash = 888;
-char *flash1 = "ESTO ES UN MENSAJE";
 char parsingGPS[5] = "HOLII";
 
 __attribute__((__section__(".user_data"))) const char userConfig[64];
@@ -48,24 +42,24 @@ int main(void) {
 	/* Configure the system clock */
 	SystemClock_Config();
 
-//	strcpy(datoFlash, userConfig[0]);
-//
-//	Write_Flash(flash1);
-//	/* Initialize all configured peripherals */
-//	strcpy(datoFlash, userConfig[0]);
 	GPIO_Init();
 	BSP_LED_Init(LED2);
 
 	UART2_Init();
 	DMA_Init();
-//	UART6_Init();
+	UART6_Init();
 	UART1_Init();
 
 	imprimir("\r\nCOMIENZO PROGRAMA\r\n");
 
-//	inicializar_gps();
+	inicializar_gps();
 
-//	LP_Init();
+	read_buffer();
+
+	send_ATCommand_DMA("AT\r\n");
+	HAL_Delay(1000);
+
+	LP_Init();
 //
 //	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 //	HAL_Init();
@@ -101,23 +95,7 @@ int main(void) {
 //
 //	/* calculate delay to enter window. Add 1ms to secure round number to upper number  */
 //	delay = TimeoutCalculation((hwwdg.Init.Counter - hwwdg.Init.Window) + 1) +  1;
-	read_buffer();
 
-	send_ATCommand_DMA("AT\r\n");
-	HAL_Delay(1000);
-//	leerBuffer();
-//	send_ATCommand_DMA("AT+CMGF=1\r\n");
-//	HAL_Delay(1000);
-//	leerBuffer();
-//	send_ATCommand_DMA("AT+CMGS=+34649103025\r\n");
-//	HAL_Delay(1000);
-//	leerBuffer();
-//	send_ATCommand_DMA("ieeeeeee\r\n");
-//	HAL_Delay(1000);
-//	leerBuffer();
-//	send_ATCommand_DMA("\x1A");
-//	HAL_Delay(1000);
-//	leerBuffer();
 
 	while (1) {
 		/* Toggle LED2 */
@@ -127,7 +105,7 @@ int main(void) {
 		/* Insert calculated delay */
 //		HAL_Delay(delay);
 
-		HAL_Delay(3000);
+		HAL_Delay(100);
 
 //		if (HAL_WWDG_Refresh(&hwwdg) != HAL_OK) {
 //			Error_Handler();
@@ -139,18 +117,18 @@ uint32_t FlashAddress = 0x08040000;
 
 void Write_Flash(char *data)
 {
-	HAL_FLASH_Unlock();
-	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR);
-	/* Fill EraseInit structure*/
-	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
-	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
-	EraseInitStruct.Sector = FLASH_SECTOR_6;
-	EraseInitStruct.NbSectors = 1;
-	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SECTORError) != HAL_OK) {
-		Error_Handler();
-	}
-	HAL_FLASH_Program(TYPEPROGRAM_WORD, FlashAddress, (uint64_t)data);
-	HAL_FLASH_Lock();
+//	HAL_FLASH_Unlock();
+//	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR);
+//	/* Fill EraseInit structure*/
+//	EraseInitStruct.TypeErase = FLASH_TYPEERASE_SECTORS;
+//	EraseInitStruct.VoltageRange = FLASH_VOLTAGE_RANGE_3;
+//	EraseInitStruct.Sector = FLASH_SECTOR_6;
+//	EraseInitStruct.NbSectors = 1;
+//	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SECTORError) != HAL_OK) {
+//		Error_Handler();
+//	}
+//	HAL_FLASH_Program(TYPEPROGRAM_WORD, FlashAddress, (uint64_t)data);
+//	HAL_FLASH_Lock();
 }
 
 void imprimir(char* msg){

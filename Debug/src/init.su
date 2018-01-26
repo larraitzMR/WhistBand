@@ -8,6 +8,6 @@ init.c:124:6:I2C1_Init	8	static
 init.c:141:6:WWDG_Init	8	static
 init.c:153:6:HAL_WWDG_EarlyWakeupCallback	16	static
 init.c:161:6:LP_Init	16	static
-init.c:219:6:HAL_SYSTICK_Callback	8	static
-init.c:229:6:HAL_RTCEx_WakeUpTimerEventCallback	16	static
-init.c:241:6:HAL_GPIO_EXTI_Callback	16	static
+init.c:254:6:HAL_SYSTICK_Callback	8	static
+init.c:264:6:HAL_RTCEx_WakeUpTimerEventCallback	16	static
+init.c:276:6:HAL_GPIO_EXTI_Callback	16	static

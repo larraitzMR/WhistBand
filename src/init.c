@@ -203,6 +203,41 @@ void LP_Init(void)
 	 - Wake-up using EXTI Line (User Button)
 	 */
 	SleepMode_Measure();
+#elif defined (STOP_MODE)
+  /* STOP Mode Entry
+      - RTC Clocked by LSI
+      - Regulator in LP mode
+      - HSI, HSE OFF and LSI OFF if not used as RTC Clock source
+      - No IWDG
+      - FLASH in deep power down mode
+      - Automatic Wake-up using RTC clocked by LSI (after ~20s)
+   */
+  StopMode_Measure();
+#elif defined (STANDBY_MODE)
+  /* STANDBY Mode Entry
+      - Backup SRAM and RTC OFF
+      - IWDG and LSI OFF
+      - Wake-up using WakeUp Pin (PA.00)
+   */
+  StandbyMode_Measure();
+
+#elif defined (STANDBY_RTC_MODE)
+  /* STANDBY Mode with RTC on LSI Entry
+      - RTC Clocked by LSI
+      - IWDG OFF and LSI OFF if not used as RTC Clock source
+      - Backup SRAM OFF
+      - Automatic Wake-up using RTC clocked by LSI (after ~20s)
+   */
+  StandbyRTCMode_Measure();
+
+#elif defined (STANDBY_RTC_BKPSRAM_MODE)
+  /* STANDBY Mode with RTC on LSI Entry
+      - RTC Clocked by LSI
+      - Backup SRAM ON
+      - IWDG OFF
+      - Automatic Wake-up using RTC clocked by LSI (after ~20s)
+  */
+  StandbyRTCBKPSRAMMode_Measure();
 #endif
 
 	if (uwCounter != 0) {
