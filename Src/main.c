@@ -29,6 +29,10 @@ extern SPI_HandleTypeDef hspi1;
 char pars[80];
 char parsingGPS[5] = "HOLII";
 
+char ReadyBuf[5];
+extern int ready;
+extern uint8_t ReadyMsg[];
+
 __attribute__((__section__(".user_data"))) const char userConfig[64];
 
 int main(void) {
@@ -41,7 +45,7 @@ int main(void) {
 
 	/* Configure the system clock */
 	SystemClock_Config();
-
+	/*
 	GPIO_Init();
 	BSP_LED_Init(LED2);
 
@@ -53,63 +57,59 @@ int main(void) {
 	imprimir("\r\nCOMIENZO PROGRAMA\r\n");
 
 	inicializar_gps();
+	 */
 
-	read_buffer();
+	/******** INIT ********/
+	HAL_Init();
+	SystemClock_Config();
+	GPIO_Init();
 
-	send_ATCommand_DMA("AT\r\n");
-	HAL_Delay(1000);
+	//INIT botón y bluetooth
+	SPI5_Init();
+	//Configurar LED
+	LEDs_Init();
+	LED_ON('G');
 
-	LP_Init();
-//
-//	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-//	HAL_Init();
-//
-//	/* Initialize all configured peripherals */
-//	GPIO_Init();
-//	UART2_Init();
-//	DMA_Init();
-//	UART6_Init();
-//
-//	inicializar_gps();
+	//Configuración y comunicación I2C con el BQ
+	I2C1_Init();
+	//Recibir desde el BQ el estado de la batería: HAL_I2C_Master_Receive();
 
-//  I2C1_Init();
-//
-	/*##-1- Check if the system has resumed from WWDG reset ####################*/
-//	if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST) != RESET) {
-//		/* WWDGRST flag set: Turn LED2 on */
-//		BSP_LED_On(LED2);
-//
-//		/* Insert 4s delay */
-//		HAL_Delay(4000);
-//
-//		/* Prior to clear WWDGRST flag: Turn LED2 off */
-//		BSP_LED_Off(LED2);
-//	}
-//
-//	/* Clear reset flags in any case */
-//	__HAL_RCC_CLEAR_RESET_FLAGS();
-//
-//	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
-//
-//	WWDG_Init();
-//
-//	/* calculate delay to enter window. Add 1ms to secure round number to upper number  */
-//	delay = TimeoutCalculation((hwwdg.Init.Counter - hwwdg.Init.Window) + 1) +  1;
+	//Iniciar GPRS para mandar el estado de la batería a la web
+	UART1_Init();
+	//Mandar comandos AT
+	send_ATCommand_DMA("AT#HTTPCFG= 0,'larraitz.myruns.com',80,0,,,0,120,1");
+	send_ATCommand_DMA("AT#SGACT=1,1");
+	send_ATCommand_DMA("AT#HTTPQRY=0,0,'/'");
+
+	//Sleep Mode
+
+	/******** INICIO CARRERA ********/
+	//Despertar reloj
+	//Iniciar RTC
+	RTC_Init();
+	RTC_Config();
+	//Iniciar GPS
+	UART2_Init();
+	inicializar_gps();
+
+	/******** DURANTE CARRERA ********/
+	if(ready == 0) {
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+		HAL_SPI_TransmitReceive(&hspi1, (uint8_t*)ReadyMsg, (uint8_t *)ReadyBuf, 7, 5000);
+		while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY) {
+		}
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+		if(Buffercmp((uint8_t*)ReadyMsg, (uint8_t*)ReadyBuf, BUFFERSIZE)) {
+			ready = 1;
+		}
+		Flush_Buffer((uint8_t*)ReadyBuf, BUFFERSIZE);
+	}
+
+	enviar_coord_lora();
 
 
 	while (1) {
-		/* Toggle LED2 */
-		BSP_LED_Toggle(LED2);
-		//HAL_SPI_TransmitReceive(&hspi1, (uint8_t*)"HOLAAAA", (uint8_t *)pars, 7, 5000);
-//		imprimir("main loop");
-		/* Insert calculated delay */
-//		HAL_Delay(delay);
 
-		HAL_Delay(100);
-
-//		if (HAL_WWDG_Refresh(&hwwdg) != HAL_OK) {
-//			Error_Handler();
-//		}
 	}
 }
 

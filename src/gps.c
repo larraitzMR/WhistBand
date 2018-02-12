@@ -16,6 +16,16 @@ char parsing[80];
 struct datosBuffer mibuffer[200];
 struct diaDatos GPS[1000];
 
+#define RBUFFSIZE 77
+char reciboGPS[RBUFFSIZE];
+
+char bufferReady[5];
+char buffer[10];
+char bufferGPS[40];
+char bufferReceive[2];
+char bufferParsing[40];
+int len;
+
 char *nmea[15];
 int i = 0;
 int numGPS = 0;
@@ -209,6 +219,70 @@ void obtener_coordenadas() {
 //		if (numGPS == 999) {
 //			numGPS = 0;
 //		}
+//	}
+}
+
+int glora = 0;
+int envioReady = 0;
+char horaL[9];
+char latitudL[11];
+char latCoorL[2];
+char longitudL[11];
+char longCoorL[2];
+int reciboOK = 0;
+//int reciboReady = 0;
+int ready = 0;
+
+uint8_t ReadyMsg[] = "READY";
+uint8_t OKMsg[] = "OK";
+
+void enviar_coord_lora(void)
+{
+//	if (ready == 1)
+//	{
+//		int numero = numGPS-1;
+//		if (numero == -1)
+//		{
+//			numero = 999;
+//		}
+//		strcpy(horaL, GPS[numero].datos.hora);
+//		horaL[8] = '\0';
+//		strcpy(latitudL, GPS[numero].datos.latitud);
+//		latitudL[10] = '\0';
+//		strcpy(latCoorL, GPS[numero].datos.latCoor);
+//		latCoorL[1] = '\0';
+//		strcpy(longitudL, GPS[numero].datos.longitud);
+//		longitudL[10] = '\0';
+//		strcpy(longCoorL, GPS[numero].datos.longCoor);
+//		longCoorL[1] = '\0';
+//
+//		sprintf(bufferGPS, "GPS %s %s %s %s %s\r\n", horaL, latitudL, latCoorL, longitudL,	longCoorL);
+//		len = strlen(bufferGPS);/
+//
+//		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+//		HAL_SPI_TransmitReceive(&hspi2, (uint8_t*) bufferGPS,(uint8_t*) bufferReceive, len, 2000);
+//		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+//
+//		if(Buffercmp((uint8_t*)OKMsg, (uint8_t*)bufferReceive, 2)) {
+//			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+//			HAL_SPI_TransmitReceive(&hspi2, (uint8_t*) OKMsg, (uint8_t*) bufferParsing , len, 2000);
+//			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+//
+//			if(Buffercmp((uint8_t*)bufferGPS, (uint8_t*)bufferParsing, 2)) {
+//				//empezar timer
+//			    __TIM3_CLK_ENABLE();
+//			    HAL_NVIC_EnableIRQ(TIM2_IRQn);
+//			}
+//
+//		} else {
+////			HAL_UART_Transmit(&huart2, (uint8_t*) bufferReceive, strlen(bufferReceive),1000);
+//			//Hacer una cuenta de intentos y cuando llegue al número de intentos cambiar a GPRS.
+//			//Numero de intentos = 4
+//			//Para cambiar a GPRS, desactivar la SPI, activar I2C (cuando funcione) e inicializar el GPRS.
+//		}
+//		Flush_Buffer((uint8_t*)bufferReceive, len);
+//		Flush_Buffer((uint8_t*)bufferParsing, strlen(bufferParsing));
+//
 //	}
 }
 

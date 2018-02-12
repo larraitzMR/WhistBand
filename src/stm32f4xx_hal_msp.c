@@ -202,6 +202,39 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi) {
 		/* Peripheral interrupt init*/
 		HAL_NVIC_SetPriority(SPI2_IRQn, 0, 0);
 		HAL_NVIC_EnableIRQ(SPI2_IRQn);
+	} else if (hspi->Instance == SPI5) {
+		/* Peripheral clock enable */
+		__SPI1_CLK_ENABLE();
+
+		/**SPI1 GPIO Configuration
+		 PE11     ------> SPI1_NSS
+		 PE12     ------> SPI1_SCK
+		 PE13     ------> SPI1_MISO
+		 PE14     ------> SPI1_MOSI
+		 */
+
+	    GPIO_InitStruct.Pin = GPIO_PIN_12;
+		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;	//GPIO_NOPULL
+		GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+		GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+		HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+		GPIO_InitStruct.Pin = GPIO_PIN_13;
+		GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+		HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+		GPIO_InitStruct.Pin = GPIO_PIN_14;
+		GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+		HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+		GPIO_InitStruct.Pin  = GPIO_PIN_11;
+		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+		HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+		/* Peripheral interrupt init*/
+		HAL_NVIC_SetPriority(SPI2_IRQn, 0, 0);
+		HAL_NVIC_EnableIRQ(SPI2_IRQn);
 	}
 }
 

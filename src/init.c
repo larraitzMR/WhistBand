@@ -9,62 +9,93 @@
 #include "main.h"
 #include "lp_modes.h"
 
-
 I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi5;
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart6;
+RTC_HandleTypeDef RtcHandle;
 WWDG_HandleTypeDef hwwdg;
 
-
 /** Pinout Configuration
-*/
-void GPIO_Init(void)
-{
+ */
+void GPIO_Init(void) {
 
-  /* GPIO Ports Clock Enable */
-  __GPIOA_CLK_ENABLE();
-  __GPIOC_CLK_ENABLE();
-  __GPIOB_CLK_ENABLE();
+	/* GPIO Ports Clock Enable */
+	__GPIOA_CLK_ENABLE();
+	__GPIOB_CLK_ENABLE();
+	__GPIOC_CLK_ENABLE();
+	__GPIOD_CLK_ENABLE();
+	__GPIOE_CLK_ENABLE();
+}
 
+void LEDs_Init(void) {
+	GPIO_InitTypeDef GPIO_InitStruct;
+
+	/* Configure the GPIO_LED pin */
+	GPIO_InitStruct.Pin = GPIO_PIN_14 | GPIO_PIN_15; // pin que desamos configurar
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // lo vamos a usar como salida en push - pull
+	GPIO_InitStruct.Pull = GPIO_NOPULL; // desactivar pulls
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW; // actualizacion pin
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+
+void LED_ON(char led) {
+	switch (led) {
+	case R:
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+		break;
+	case G:
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+		break;
+	}
+}
+
+void LED_OFF(char led) {
+	switch (led) {
+	case R:
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+		break;
+	case G:
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+		break;
+
+	}
 }
 
 /* USART1 init function */
-void UART1_Init(void)
-{
+void UART1_Init(void) {
 
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  HAL_UART_Init(&huart1);
+	huart1.Instance = USART1;
+	huart1.Init.BaudRate = 115200;
+	huart1.Init.WordLength = UART_WORDLENGTH_8B;
+	huart1.Init.StopBits = UART_STOPBITS_1;
+	huart1.Init.Parity = UART_PARITY_NONE;
+	huart1.Init.Mode = UART_MODE_TX_RX;
+	huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+	HAL_UART_Init(&huart1);
 
 }
 
 /* USART2 init function */
-void UART2_Init(void)
-{
+void UART2_Init(void) {
 
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  HAL_UART_Init(&huart2);
+	huart2.Instance = USART2;
+	huart2.Init.BaudRate = 115200;
+	huart2.Init.WordLength = UART_WORDLENGTH_8B;
+	huart2.Init.StopBits = UART_STOPBITS_1;
+	huart2.Init.Parity = UART_PARITY_NONE;
+	huart2.Init.Mode = UART_MODE_TX_RX;
+	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+	HAL_UART_Init(&huart2);
 
 }
 
 /* USART1 init function */
-void UART6_Init(void)
-{
+void UART6_Init(void) {
 
 	huart6.Instance = USART6;
 	huart6.Init.BaudRate = 9600;
@@ -79,89 +110,148 @@ void UART6_Init(void)
 }
 
 /**
-  * Enable DMA controller clock
-  */
-void DMA_Init(void)
-{
-  /* DMA controller clock enable */
-  __DMA2_CLK_ENABLE();
+ * Enable DMA controller clock
+ */
+void DMA_Init(void) {
+	/* DMA controller clock enable */
+	__DMA2_CLK_ENABLE();
 
-  /* DMA interrupt init */
-  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
-  HAL_NVIC_SetPriority(DMA2_Stream5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream5_IRQn);
-  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
-  HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+	/* DMA interrupt init */
+	HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+	HAL_NVIC_SetPriority(DMA2_Stream5_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA2_Stream5_IRQn);
+	HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
+	HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
 }
 
 /* SPI1 init function */
-void SPI1_Init(void)
-{
+void SPI1_Init(void) {
 
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
+	hspi1.Instance = SPI1;
+	hspi1.Init.Mode = SPI_MODE_MASTER;
 
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
-  hspi1.Init.CRCPolynomial = 7;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
+	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+	hspi1.Init.CRCPolynomial = 7;
+	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi1.Init.NSS = SPI_NSS_SOFT;
+	hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
 
-  HAL_SPI_Init(&hspi1);
+	HAL_SPI_Init(&hspi1);
+
+}
+
+/* SPI5 init function */
+void SPI1_Init(void) {
+
+	hspi5.Instance = SPI5;
+	hspi5.Init.Mode = SPI_MODE_MASTER;
+
+	hspi5.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+	hspi5.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi5.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi5.Init.CLKPolarity = SPI_POLARITY_LOW;
+	hspi5.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi5.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+	hspi5.Init.CRCPolynomial = 7;
+	hspi5.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi5.Init.NSS = SPI_NSS_SOFT;
+	hspi5.Init.TIMode = SPI_TIMODE_DISABLED;
+
+	HAL_SPI_Init(&hspi5);
 
 }
 
 /* I2C1 init function */
-void I2C1_Init(void)
+void I2C1_Init(void) {
+
+	hi2c1.Instance = I2C1;
+	hi2c1.Init.ClockSpeed = 100000;
+	hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+	hi2c1.Init.OwnAddress1 = 0;
+	hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
+	hi2c1.Init.OwnAddress2 = 0;
+	hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
+	hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
+	HAL_I2C_Init(&hi2c1);
+
+}
+
+void RTC_Init() {
+
+	 /*##-1- Configure the RTC peripheral #######################################*/
+	/* Configure RTC prescaler and RTC data registers */
+	/* RTC configured as follow:
+	 - Hour Format    = Format 24
+	 - Asynch Prediv  = Value according to source clock
+	 - Synch Prediv   = Value according to source clock
+	 - OutPut         = Output Disable
+	 - OutPutPolarity = High Polarity
+	 - OutPutType     = Open Drain */
+	RtcHandle.Instance = RTC;
+	RtcHandle.Init.HourFormat = RTC_HOURFORMAT_24;
+	RtcHandle.Init.AsynchPrediv = RTC_ASYNCH_PREDIV;
+	RtcHandle.Init.SynchPrediv = RTC_SYNCH_PREDIV;
+	RtcHandle.Init.OutPut = RTC_OUTPUT_DISABLE;
+	RtcHandle.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+	RtcHandle.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+
+}
+
+void RTC_Config(void)
 {
 
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
-  HAL_I2C_Init(&hi2c1);
+	RTC_TimeTypeDef stimestructure;
 
+  /* Set Time: 02:00:00 */
+  stimestructure.Hours = 0x00;
+  stimestructure.Minutes = 0x00;
+  stimestructure.Seconds = 0x00;
+  stimestructure.TimeFormat = RTC_HOURFORMAT12_AM;
+  stimestructure.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  stimestructure.StoreOperation = RTC_STOREOPERATION_RESET;
+
+  if(HAL_RTC_SetTime(&RtcHandle,&stimestructure,RTC_FORMAT_BCD) != HAL_OK)
+  {
+    /* Error */
+    Error_Handler();
+  }
+
+  /*##-3- Writes a data in a RTC Backup data Register0 #######################*/
+  HAL_RTCEx_BKUPWrite(&RtcHandle,RTC_BKP_DR0,0x32F2);
 }
 
 /* WWDG init function */
-void WWDG_Init(void)
-{
+void WWDG_Init(void) {
 
-  hwwdg.Instance = WWDG;
-  hwwdg.Init.Prescaler = WWDG_PRESCALER_8;
-  hwwdg.Init.Window    = 80;
-  hwwdg.Init.Counter   = 127;
-  hwwdg.Init.EWIMode   = WWDG_EWI_DISABLE;
-  HAL_WWDG_Init(&hwwdg);
+	hwwdg.Instance = WWDG;
+	hwwdg.Init.Prescaler = WWDG_PRESCALER_8;
+	hwwdg.Init.Window = 80;
+	hwwdg.Init.Counter = 127;
+	hwwdg.Init.EWIMode = WWDG_EWI_DISABLE;
+	HAL_WWDG_Init(&hwwdg);
 
 }
 
-void HAL_WWDG_EarlyWakeupCallback(WWDG_HandleTypeDef* hwwdg)
-{
+void HAL_WWDG_EarlyWakeupCallback(WWDG_HandleTypeDef* hwwdg) {
 	imprimir("EarlyWakeUP\r\n");
 }
 
-
 __IO uint32_t uwCounter = 0;
 
-void LP_Init(void)
-{
+void LP_Init(void) {
 	/* Enable Power Clock */
-	__HAL_RCC_PWR_CLK_ENABLE();
+	__HAL_RCC_PWR_CLK_ENABLE()
+	;
 
 	/* Check and handle if the system was resumed from Standby mode */
 	if (__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET) {
@@ -204,40 +294,40 @@ void LP_Init(void)
 	 */
 	SleepMode_Measure();
 #elif defined (STOP_MODE)
-  /* STOP Mode Entry
-      - RTC Clocked by LSI
-      - Regulator in LP mode
-      - HSI, HSE OFF and LSI OFF if not used as RTC Clock source
-      - No IWDG
-      - FLASH in deep power down mode
-      - Automatic Wake-up using RTC clocked by LSI (after ~20s)
-   */
-  StopMode_Measure();
+	/* STOP Mode Entry
+	 - RTC Clocked by LSI
+	 - Regulator in LP mode
+	 - HSI, HSE OFF and LSI OFF if not used as RTC Clock source
+	 - No IWDG
+	 - FLASH in deep power down mode
+	 - Automatic Wake-up using RTC clocked by LSI (after ~20s)
+	 */
+	StopMode_Measure();
 #elif defined (STANDBY_MODE)
-  /* STANDBY Mode Entry
-      - Backup SRAM and RTC OFF
-      - IWDG and LSI OFF
-      - Wake-up using WakeUp Pin (PA.00)
-   */
-  StandbyMode_Measure();
+	/* STANDBY Mode Entry
+	 - Backup SRAM and RTC OFF
+	 - IWDG and LSI OFF
+	 - Wake-up using WakeUp Pin (PA.00)
+	 */
+	StandbyMode_Measure();
 
 #elif defined (STANDBY_RTC_MODE)
-  /* STANDBY Mode with RTC on LSI Entry
-      - RTC Clocked by LSI
-      - IWDG OFF and LSI OFF if not used as RTC Clock source
-      - Backup SRAM OFF
-      - Automatic Wake-up using RTC clocked by LSI (after ~20s)
-   */
-  StandbyRTCMode_Measure();
+	/* STANDBY Mode with RTC on LSI Entry
+	 - RTC Clocked by LSI
+	 - IWDG OFF and LSI OFF if not used as RTC Clock source
+	 - Backup SRAM OFF
+	 - Automatic Wake-up using RTC clocked by LSI (after ~20s)
+	 */
+	StandbyRTCMode_Measure();
 
 #elif defined (STANDBY_RTC_BKPSRAM_MODE)
-  /* STANDBY Mode with RTC on LSI Entry
-      - RTC Clocked by LSI
-      - Backup SRAM ON
-      - IWDG OFF
-      - Automatic Wake-up using RTC clocked by LSI (after ~20s)
-  */
-  StandbyRTCBKPSRAMMode_Measure();
+	/* STANDBY Mode with RTC on LSI Entry
+	 - RTC Clocked by LSI
+	 - Backup SRAM ON
+	 - IWDG OFF
+	 - Automatic Wake-up using RTC clocked by LSI (after ~20s)
+	 */
+	StandbyRTCBKPSRAMMode_Measure();
 #endif
 
 	if (uwCounter != 0) {
@@ -247,42 +337,37 @@ void LP_Init(void)
 }
 
 /**
-  * @brief SYSTICK callback
-  * @param None
-  * @retval None
-  */
-void HAL_SYSTICK_Callback(void)
-{
-  HAL_IncTick();
+ * @brief SYSTICK callback
+ * @param None
+ * @retval None
+ */
+void HAL_SYSTICK_Callback(void) {
+	HAL_IncTick();
 }
 
 /**
-  * @brief  Wake Up Timer callback
-  * @param  hrtc : hrtc handle
-  * @retval None
-  */
-void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
-{
-  /* NOTE : add the specific code to handle the RTC wake up interrupt */
-  uwCounter = 1;
-  imprimir("RTC callback");
+ * @brief  Wake Up Timer callback
+ * @param  hrtc : hrtc handle
+ * @retval None
+ */
+void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc) {
+	/* NOTE : add the specific code to handle the RTC wake up interrupt */
+	uwCounter = 1;
+	imprimir("RTC callback");
 }
 
 /**
-  * @brief EXTI line detection callbacks
-  * @param GPIO_Pin: Specifies the pins connected EXTI line
-  * @retval None
-  */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-  /* Configure LED2 */
-  BSP_LED_Init(LED2);
-  /* NOTE : add the specific code to handle the wake up button interrupt */
-  if(GPIO_Pin == KEY_BUTTON_PIN)
-  {
-    uwCounter = 2;
-    imprimir("GPIO callback");
-  }
+ * @brief EXTI line detection callbacks
+ * @param GPIO_Pin: Specifies the pins connected EXTI line
+ * @retval None
+ */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	/* Configure LED2 */
+	BSP_LED_Init(LED2);
+	/* NOTE : add the specific code to handle the wake up button interrupt */
+	if (GPIO_Pin == KEY_BUTTON_PIN) {
+		uwCounter = 2;
+		imprimir("GPIO callback");
+	}
 }
-
 
