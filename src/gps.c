@@ -319,7 +319,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 	}
 	else if (UartHandle->Instance == USART6) {
 		(&huart6)->RxState = HAL_UART_STATE_READY;
-		imprimir(parsing);
+		//imprimir(parsing);
 		guardar_coordenadas(parsing);
 		UartReady = SET;
 	}

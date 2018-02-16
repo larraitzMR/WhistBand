@@ -1,5 +1,6 @@
-gps.c:48:6:inicializar_gps	8	static
-gps.c:86:6:guardar_coordenadas	16	static
-gps.c:102:6:obtener_coordenadas	24	static
-gps.c:220:6:HAL_UART_TxCpltCallback	16	static
-gps.c:240:6:HAL_UART_RxCpltCallback	16	static
+gps.c:58:6:inicializar_gps	8	static
+gps.c:96:6:guardar_coordenadas	16	static
+gps.c:112:6:obtener_coordenadas	24	static
+gps.c:239:6:enviar_coord_lora	4	static
+gps.c:294:6:HAL_UART_TxCpltCallback	16	static
+gps.c:314:6:HAL_UART_RxCpltCallback	16	static

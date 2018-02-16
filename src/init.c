@@ -43,10 +43,10 @@ void LEDs_Init(void) {
 
 void LED_ON(char led) {
 	switch (led) {
-	case R:
+	case 'R':
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
 		break;
-	case G:
+	case 'G':
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
 		break;
 	}
@@ -54,10 +54,10 @@ void LED_ON(char led) {
 
 void LED_OFF(char led) {
 	switch (led) {
-	case R:
+	case 'R':
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
 		break;
-	case G:
+	case 'G':
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
 		break;
 
@@ -150,7 +150,7 @@ void SPI1_Init(void) {
 }
 
 /* SPI5 init function */
-void SPI1_Init(void) {
+void SPI5_Init(void) {
 
 	hspi5.Instance = SPI5;
 	hspi5.Init.Mode = SPI_MODE_MASTER;

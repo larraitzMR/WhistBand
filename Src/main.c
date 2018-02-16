@@ -45,7 +45,7 @@ int main(void) {
 
 	/* Configure the system clock */
 	SystemClock_Config();
-	/*
+
 	GPIO_Init();
 	BSP_LED_Init(LED2);
 
@@ -57,58 +57,69 @@ int main(void) {
 	imprimir("\r\nCOMIENZO PROGRAMA\r\n");
 
 	inicializar_gps();
-	 */
 
-	/******** INIT ********/
-	HAL_Init();
-	SystemClock_Config();
-	GPIO_Init();
+	read_buffer();
 
-	//INIT botón y bluetooth
-	SPI5_Init();
-	//Configurar LED
-	LEDs_Init();
-	LED_ON('G');
+	send_ATCommand_DMA("AT\r\n");
+	HAL_Delay(1000);
 
-	//Configuración y comunicación I2C con el BQ
-	I2C1_Init();
-	//Recibir desde el BQ el estado de la batería: HAL_I2C_Master_Receive();
 
-	//Iniciar GPRS para mandar el estado de la batería a la web
-	UART1_Init();
-	//Mandar comandos AT
-	send_ATCommand_DMA("AT#HTTPCFG= 0,'larraitz.myruns.com',80,0,,,0,120,1");
-	send_ATCommand_DMA("AT#SGACT=1,1");
-	send_ATCommand_DMA("AT#HTTPQRY=0,0,'/'");
-
-	//Sleep Mode
-
-	/******** INICIO CARRERA ********/
-	//Despertar reloj
-	//Iniciar RTC
-	RTC_Init();
-	RTC_Config();
-	//Iniciar GPS
-	UART2_Init();
-	inicializar_gps();
-
-	/******** DURANTE CARRERA ********/
-	if(ready == 0) {
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-		HAL_SPI_TransmitReceive(&hspi1, (uint8_t*)ReadyMsg, (uint8_t *)ReadyBuf, 7, 5000);
-		while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY) {
-		}
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-		if(Buffercmp((uint8_t*)ReadyMsg, (uint8_t*)ReadyBuf, BUFFERSIZE)) {
-			ready = 1;
-		}
-		Flush_Buffer((uint8_t*)ReadyBuf, BUFFERSIZE);
-	}
-
-	enviar_coord_lora();
+//	/******** INIT ********/
+//	HAL_Init();
+//	SystemClock_Config();
+//	GPIO_Init();
+//
+//	//INIT botón y bluetooth
+//	SPI5_Init();
+//	//Configurar LED
+//	LEDs_Init();
+//	LED_ON('G');
+//
+//	//Configuración y comunicación I2C con el BQ
+//	I2C1_Init();
+//	//Recibir desde el BQ el estado de la batería: HAL_I2C_Master_Receive();
+//
+//	//Iniciar GPRS para mandar el estado de la batería a la web
+//	UART1_Init();
+//	//Mandar comandos AT
+//	send_ATCommand_DMA("AT#HTTPCFG= 0,'larraitz.myruns.com',80,0,,,0,120,1");
+//	send_ATCommand_DMA("AT#SGACT=1,1");
+//	send_ATCommand_DMA("AT#HTTPQRY=0,0,'/'");
+//
+//	//Sleep Mode
+//
+//	/******** INICIO CARRERA ********/
+//	//Despertar reloj
+//	//Iniciar RTC
+//	RTC_Init();
+//	RTC_Config();
+//	//Iniciar GPS
+//	UART2_Init();
+//	inicializar_gps();
+//
+//	/******** DURANTE CARRERA ********/
+//	if(ready == 0) {
+//		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+//		HAL_SPI_TransmitReceive(&hspi1, (uint8_t*)ReadyMsg, (uint8_t *)ReadyBuf, 7, 5000);
+//		while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY) {
+//		}
+//		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+//		if(Buffercmp((uint8_t*)ReadyMsg, (uint8_t*)ReadyBuf, BUFFERSIZE)) {
+//			ready = 1;
+//		}
+//		Flush_Buffer((uint8_t*)ReadyBuf, BUFFERSIZE);
+//	}
+//
+//	enviar_coord_lora();
 
 
 	while (1) {
+		/* Toggle LED2 */
+		BSP_LED_Toggle(LED2);
+		leerBuffer();
+		HAL_Delay(100);
+
+
 
 	}
 }
