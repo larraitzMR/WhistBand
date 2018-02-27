@@ -10,6 +10,7 @@
 #include "stm32f4xx_hal.h"
 #include "init.h"
 #include "gps.h"
+#include "gprs.h"
 //#include "stm32f4xx_lp_modes.h"
 #include <string.h>
 /* Private variables ---------------------------------------------------------*/
@@ -33,12 +34,22 @@ char ReadyBuf[5];
 extern int ready;
 extern uint8_t ReadyMsg[];
 
+int intentoLora;
+int intentoGPRS;
+
+char preparaHTTP[50];
+char envioHTTP[74];
+
+
+
 __attribute__((__section__(".user_data"))) const char userConfig[64];
 
 int main(void) {
 
 	/* MCU Configuration----------------------------------------------------------*/
 	uint32_t delay;
+	intentoLora = 0;
+	intentoGPRS = 0;
 
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
@@ -58,10 +69,85 @@ int main(void) {
 
 	inicializar_gps();
 
-	read_buffer();
+	//read_buffer();
+//	send_ATCommand("AT\r\n",1000);
+//	if(isOK() < 0)
+//	{
+//		imprimir("No hay comunicacion con el GPRS");
+//	}
+//	else
+//	{
+//		read_buffer();
 
-	send_ATCommand_DMA("AT\r\n");
-	HAL_Delay(1000);
+		//sprintf(envioHTTP,"%s0,\"%s\"""%d,0,,,0,120,1\r\n",AT_HTTTP,SERVER_ADDRESS,SERVER_PORT);
+		//send_ATCommand_DMA("AT#HTTPCFG=0,\"larraitz.myruns.com\",80,0,,,0,120,1\r\n");
+	//	send_ATCommand("AT#HTTPCFG=0,\"larraitz.myruns.com\",80,0,,,0,120,1\r\n",1000);
+	//	leerBuffer();
+	//	send_ATCommand_DMA("AT#HTTPSND=0,0,\"/pruebas_post.php\",46,\"application/x-www-form-urlencoded\"\r\n");
+	//	leerBuffer();
+	//	enviar_coordenadas_gprs();
+	//	leerBuffer();
+		send_ATCommand("AT+CMEE=2\r\n",5000);
+		HAL_Delay(5000);
+	//	send_ATCommand("AT+CREG?\r\n",2000);
+	//	read_buffer();
+	//	send_ATCommand("AT+COPS?\r\n",2000);
+	//	read_buffer();
+		send_ATCommand("AT+COPS=4,2,\"42502\"\r\n",5000);
+		HAL_Delay(5000);
+	//	send_ATCommand("AT+CREG?\r\n",2000);
+	//	read_buffer();
+		send_ATCommand("AT+CGDCONT=1,\"IP\",\"internetm2m.air.com\"\r\n",5000);
+		HAL_Delay(5000);
+		send_ATCommand("AT#SGACT=1,1\r\n",10000);
+		HAL_Delay(10000);
+
+		send_ATCommand("AT#HTTPCFG=0,\"larraitz.myruns.com\",80,0,,,0,120,1\r\n",5000);
+		HAL_Delay(5000);
+		send_ATCommand("AT#HTTPSND=0,0,\"/pruebas_post.php\",46,\"application/x-www-form-urlencoded\"\r\n",5000);
+	//	read_buffer();
+		HAL_Delay(10000);
+	//	enviar_coordenadas_gprs();
+		//read_buffer();
+		//HAL_Delay(5000);
+//	}
+
+
+
+
+	//Enviar por Lora
+	//	if(ready == 0) {
+	//		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+	//		HAL_SPI_TransmitReceive(&hspi1, (uint8_t*)ReadyMsg, (uint8_t *)ReadyBuf, 7, 5000);
+	//		while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY) {
+	//		}
+	//		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+	//		if(Buffercmp((uint8_t*)ReadyMsg, (uint8_t*)ReadyBuf, BUFFERSIZE)) {
+	//			ready = 1;
+	//		}
+	//		Flush_Buffer((uint8_t*)ReadyBuf, BUFFERSIZE);
+	//	}
+	//
+	//enviar_coord_lora();
+	//intentoGPRS = 0;
+	intentoLora = 5;
+
+	//Enviar por GPRS
+
+//	if (intentoLora == 5 && intentoGPRS != 3)
+//	{
+//		if (send_ATCommand_DMA("AT\r\n") < 0){
+//			HAL_Delay(1000);
+//			send_ATCommand_DMA("AT#HTTPCFG= 0,'larraitz.myruns.com',80,0,,,0,120,1");
+//			send_ATCommand_DMA("AT#HTTPSND=0,0,'/pruebas_post.php',46,'application/x-www-form-urlencoded'");
+//			enviar_coordenadas_gprs();
+//			//send_ATCommand_DMA('\x1A');
+//		}
+//		else {
+//			intentoGPRS++;
+//		}
+//	}
+
 
 
 //	/******** INIT ********/
@@ -116,8 +202,8 @@ int main(void) {
 	while (1) {
 		/* Toggle LED2 */
 		BSP_LED_Toggle(LED2);
-		leerBuffer();
-		HAL_Delay(100);
+		enviar_coordenadas_gprs();
+		HAL_Delay(5000);
 
 
 

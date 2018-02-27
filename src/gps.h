@@ -12,6 +12,10 @@ void leer_parsing(void);
 void guardar_coordenadas(char buffer[]);
 void obtener_coordenadas() ;
 
+char* formatoLat(char *h);
+char* formatoLong(char *h);
+char* formatoHora(char *h);
+char* formatoFecha(char *f);
 
 
 struct datosGPS {

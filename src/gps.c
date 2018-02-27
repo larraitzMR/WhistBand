@@ -8,6 +8,7 @@
 #include "gps.h"
 #include "main.h"
 #include <string.h>
+#include <stdlib.h>
 
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart6;
@@ -101,7 +102,7 @@ void guardar_coordenadas(char buffer[])
 	{
 		c = 0;
 	}
-//	obtener_coordenadas();
+	obtener_coordenadas();
 }
 
 /**
@@ -114,8 +115,8 @@ void obtener_coordenadas() {
 	char* str = NULL;
 	char* car = NULL;
 	char* p;
-//	char* busca = "$GPGGA";
-	char* busca = "$GNRMC";
+	char* busca = "$GPGGA";
+//	char* busca = "$GNRMC";
 
 	str = strstr(mibuffer[mb].datos,busca);
 
@@ -163,63 +164,63 @@ void obtener_coordenadas() {
 	//                              01:40:35 UTC| A=active
 	//                                          |  V=Void
 
-//	if (strcmp(tipo, "GNRMC") == 0) {
-//		if ((fechaOK == 0) && (*&nmea[9] != '\0')) {
-//			fecha = *&nmea[9];
-//			fecha = formatoFecha(fecha);
-//			strcpy(GPS[numGPS].dia, fecha);
-//			fechaOK = numGPS;
-//		}
+	if (strcmp(tipo, "GNRMC") == 0) {
+		if ((fechaOK == 0) && (*&nmea[9] != '\0')) {
+			fecha = *&nmea[9];
+			fecha = formatoFecha(fecha);
+			strcpy(GPS[numGPS].dia, fecha);
+			fechaOK = numGPS;
+		}
+
+		hora = *&nmea[1];
+		hora = formatoHora(hora);
+		latitud = *&nmea[3];
+		latitud = formatoLat(latitud);
+		latCoor = *&nmea[4];
+		longitud = *&nmea[5];
+		longitud = formatoLong(longitud);
+		longCoor = *&nmea[6];
+
+		strcpy(GPS[numGPS].datos.hora, hora);
+		strcpy(GPS[numGPS].datos.latitud, latitud);
+		strcpy(GPS[numGPS].datos.latCoor, latCoor);
+		strcpy(GPS[numGPS].datos.longitud, longitud);
+		strcpy(GPS[numGPS].datos.longCoor, longCoor);
+
+		numGPS++;
+		if (numGPS == 999) {
+			numGPS = 0;
+		}
+	}
+
+// http://www.gpsinformation.org/dale/nmea.htm#GGA
+// Example GPGGA
+// Array index -->        0   |      1       |     2     | 3 |    4       | 5 |     6     |       7     |     8     |    9   |  10  |     11	 |  12  |13|   14
+// Example     -->     $GPGGA ,  092152.000  , 4317.3578 , N , 00159.1794 , W ,     1	  ,		06	    ,    1.5    , -10.4  ,   M  ,    51.0	 ,   M  ,  , 0000*54
+// Description -->            |   Time UTC   | Latitude  |N/S| Longitude  |W/E|Fix quality|N. satellites|H.diluition|Altitude|Meters|Heigth geoid|Meters|  |checksum
+//                              09:21:52 UTC								  |1 = GPS fix
 //
-//		hora = *&nmea[1];
-//		hora = formatoHora(hora);
-//		latitud = *&nmea[3];
-//		latitud = formatoLat(latitud);
-//		latCoor = *&nmea[4];
-//		longitud = *&nmea[5];
-//		longitud = formatoLong(longitud);
-//		longCoor = *&nmea[6];
-//
-//		strcpy(GPS[numGPS].datos.hora, hora);
-//		strcpy(GPS[numGPS].datos.latitud, latitud);
-//		strcpy(GPS[numGPS].datos.latCoor, latCoor);
-//		strcpy(GPS[numGPS].datos.longitud, longitud);
-//		strcpy(GPS[numGPS].datos.longCoor, longCoor);
-//
-//		numGPS++;
-//		if (numGPS == 999) {
-//			numGPS = 0;
-//		}
-//	}
-//
-//// http://www.gpsinformation.org/dale/nmea.htm#GGA
-//// Example GPGGA
-//// Array index -->        0   |      1       |     2     | 3 |    4       | 5 |     6     |       7     |     8     |    9   |  10  |     11	 |  12  |13|   14
-//// Example     -->     $GPGGA ,  092152.000  , 4317.3578 , N , 00159.1794 , W ,     1	  ,		06	    ,    1.5    , -10.4  ,   M  ,    51.0	 ,   M  ,  , 0000*54
-//// Description -->            |   Time UTC   | Latitude  |N/S| Longitude  |W/E|Fix quality|N. satellites|H.diluition|Altitude|Meters|Heigth geoid|Meters|  |checksum
-////                              09:21:52 UTC								  |1 = GPS fix
-////
-//	else if (strcmp(tipo, "GPGGA") == 0) {
-//		hora = *&nmea[1];
-//		hora = formatoHora(hora);
-//		latitud = *&nmea[2];
-//		latitud = formatoLat(latitud);
-//		latCoor = *&nmea[3];
-//		longitud = *&nmea[4];
-//		longitud = formatoLong(longitud);
-//		longCoor = *&nmea[5];
-//
-//		strcpy(GPS[numGPS].datos.hora, hora);
-//		strcpy(GPS[numGPS].datos.latitud, latitud);
-//		strcpy(GPS[numGPS].datos.latCoor, latCoor);
-//		strcpy(GPS[numGPS].datos.longitud, longitud);
-//		strcpy(GPS[numGPS].datos.longCoor, longCoor);
-//
-//		numGPS++;
-//		if (numGPS == 999) {
-//			numGPS = 0;
-//		}
-//	}
+	else if (strcmp(tipo, "GPGGA") == 0) {
+		hora = *&nmea[1];
+		hora = formatoHora(hora);
+		latitud = *&nmea[2];
+		latitud = formatoLat(latitud);
+		latCoor = *&nmea[3];
+		longitud = *&nmea[4];
+		longitud = formatoLong(longitud);
+		longCoor = *&nmea[5];
+
+		strcpy(GPS[numGPS].datos.hora, hora);
+		strcpy(GPS[numGPS].datos.latitud, latitud);
+		strcpy(GPS[numGPS].datos.latCoor, latCoor);
+		strcpy(GPS[numGPS].datos.longitud, longitud);
+		strcpy(GPS[numGPS].datos.longCoor, longCoor);
+
+		numGPS++;
+		if (numGPS == 999) {
+			numGPS = 0;
+		}
+	}
 }
 
 int glora = 0;
@@ -282,9 +283,182 @@ void enviar_coord_lora(void)
 //		}
 //		Flush_Buffer((uint8_t*)bufferReceive, len);
 //		Flush_Buffer((uint8_t*)bufferParsing, strlen(bufferParsing));
-//
+
 //	}
 }
+
+char bufferGPRS[46];
+
+void enviar_coordenadas_gprs(void)
+{
+
+	int numero = numGPS-1;
+	if (numero == -1) {
+		numero = 999;
+	}
+	strcpy(horaL, GPS[numero].datos.hora);
+	horaL[8] = '\0';
+	strcpy(latitudL, GPS[numero].datos.latitud);
+	latitudL[10] = '\0';
+	strcpy(latCoorL, GPS[numero].datos.latCoor);
+	latCoorL[1] = '\0';
+	strcpy(longitudL, GPS[numero].datos.longitud);
+	longitudL[10] = '\0';
+	strcpy(longCoorL, GPS[numero].datos.longCoor);
+	longCoorL[1] = '\0';
+
+	sprintf(bufferGPRS, "coordenadas=%s %s %s %s %s\r\n", horaL, latitudL, latCoorL, longitudL, longCoorL);
+	//send_ATCommand_DMA("coordenadas= %s %s %s %s %s\r\n\x1a", horaL, latitudL, latCoorL, longitudL, longCoorL);
+	send_ATCommand(bufferGPRS,5000);
+//	send_ATCommand_DMA("coordenadas=14:08:30 43 18 30.8 N 01 59 10.8 W");
+//	send_ATCommand("coordenadas=01:08:30 43 17 30.8 N 01 59 10.8 W\r\n");
+}
+
+
+char time[10] = "";
+char hora_array[9] = "";
+char data[6] = "";
+char fecha_array[8] = "";
+char lati[11];
+char longi[11];
+char g[2];
+char m[2];
+char s[2];
+char sd[1];
+
+
+/**
+  * @brief  Se ajusta el formato de latitud
+  * @param  h: latitud
+  * @retval None
+  */
+char* formatoLat(char *h) {
+
+	double degValue = atof(h)/100;
+	int grados = degValue;
+	double decMinutesSeconds = ((degValue - grados)) / 0.60;
+	double minuteValue = decMinutesSeconds * 60;
+	int minutes = (int) minuteValue;
+	double secsValue = (minuteValue - minutes) * 60;
+	int segundos = secsValue;
+	int decSsegundos = (secsValue-segundos) * 10;
+
+	if(grados < 10){
+		sprintf(g, "0%d", grados);
+	} else {
+		sprintf(g, "%d", grados);
+	}
+	if(minutes < 10){
+		sprintf(m, "0%d", minutes);
+	} else {
+		sprintf(m, "%d", minutes);
+	}
+	if(segundos < 10){
+		sprintf(s, "0%d", segundos);
+	} else {
+		sprintf(s, "%d", segundos);
+	}
+	sprintf(sd, "%d", decSsegundos);
+
+	sprintf(lati, "%s %s %s.%s%s", g,m,s,sd,'\0');
+
+	return lati;
+}
+
+/**
+  * @brief  Se ajusta el formato de longitud
+  * @param  h: longitud
+  * @retval None
+  */
+char* formatoLong(char *h) {
+
+	double degValue = atof(h)/100;
+	int grados = degValue;
+	double decMinutesSeconds = ((degValue - grados)) / 0.60;
+	double minuteValue = decMinutesSeconds * 60;
+	int minutes = (int) minuteValue;
+	double secsValue = (minuteValue - minutes) * 60;
+	int segundos = secsValue;
+	int decSsegundos = (secsValue-segundos) * 10;
+
+	if(grados < 10){
+		sprintf(g, "0%d", grados);
+	} else {
+		sprintf(g, "%d", grados);
+	}
+	if(minutes < 10){
+		sprintf(m, "0%d", minutes);
+	} else {
+		sprintf(m, "%d", minutes);
+	}
+	if(segundos < 10){
+		sprintf(s, "0%d", segundos);
+	} else {
+		sprintf(s, "%d", segundos);
+	}
+	sprintf(sd, "%d", decSsegundos);
+
+	sprintf(longi, "%s %s %s.%s%s", g,m,s,sd,'\0');
+
+	return longi;
+}
+
+int forhora;
+char hora_real[2];
+/**
+  * @brief  Se ajusta el formato de hora
+  * @param  h: hora
+  * @retval None
+  */
+char* formatoHora(char *h) {
+
+	strcpy(time, h);
+	memset(&hora_array[0], 0, sizeof(hora_array));
+	forhora = atoi(h);
+	forhora = forhora/10000;
+	forhora = forhora+2;
+	if (forhora<10)
+	{
+		sprintf(hora_real, "0%d", forhora);
+	} else if (forhora<24)
+	{
+		sprintf(hora_real, "%d", forhora);
+	} else {
+		forhora = forhora-24;
+		sprintf(hora_real, "0%d", forhora);
+	}
+
+	hora_array[0] = hora_real[0];
+	hora_array[1] = hora_real[1];
+	hora_array[2] = ':';
+	hora_array[3] = time[2];
+	hora_array[4] = time[3];
+	hora_array[5] = ':';
+	hora_array[6] = time[4];
+	hora_array[7] = time[5];
+	hora_array[8] = '\0';
+	return hora_array;
+}
+
+/**
+  * @brief  Se ajusta el formato de hora y de fecha
+  * @param  h: hora, f: fecha
+  * @retval None
+  */
+char* formatoFecha(char *f) {
+
+	strcpy(data, f);
+	fecha_array[0] = data[0];
+	fecha_array[1] = data[1];
+	fecha_array[2] = '/';
+	fecha_array[3] = data[2];
+	fecha_array[4] = data[3];
+	fecha_array[5] = '/';
+	fecha_array[6] = data[4];
+	fecha_array[7] = data[5];
+	return fecha_array;
+}
+
 
 /**
   * @brief  Tx Transfer completed callback
@@ -319,7 +493,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 	}
 	else if (UartHandle->Instance == USART6) {
 		(&huart6)->RxState = HAL_UART_STATE_READY;
-		//imprimir(parsing);
+//		imprimir(parsing);
 		guardar_coordenadas(parsing);
 		UartReady = SET;
 	}

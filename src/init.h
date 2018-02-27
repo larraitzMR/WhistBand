@@ -10,7 +10,7 @@
 void GPIO_Init(void);
 void I2C1_Init(void);
 void SPI1_Init(void);
-void UART1_Init(void)
+void UART1_Init(void);
 void UART2_Init(void);
 void UART6_Init(void);
 void DMA_Init(void);

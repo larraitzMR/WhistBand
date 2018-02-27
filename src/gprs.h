@@ -6,6 +6,12 @@
  */
 
 void send_ATCommand(char *cmd, uint32_t esp_timeout);
-void send_ATCommand_DMA(char *cmd);
+int send_ATCommand_DMA(char *cmd);
 void read_buffer();
 void leerBuffer();
+
+
+#define AT_HTTTP			"AT#HTTPCFG="
+#define SERVER_ADDRESS		"larraitz.myruns.com"
+#define SERVER_PORT			80
+
