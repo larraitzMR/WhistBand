@@ -48,8 +48,6 @@ int main(void) {
 
 	/* MCU Configuration----------------------------------------------------------*/
 	uint32_t delay;
-	intentoLora = 0;
-	intentoGPRS = 0;
 
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
@@ -69,50 +67,22 @@ int main(void) {
 
 	inicializar_gps();
 
-	//read_buffer();
-//	send_ATCommand("AT\r\n",1000);
-//	if(isOK() < 0)
-//	{
-//		imprimir("No hay comunicacion con el GPRS");
-//	}
-//	else
-//	{
-//		read_buffer();
+	intentoLora = 0;
+	intentoGPRS = 0;
 
-		//sprintf(envioHTTP,"%s0,\"%s\"""%d,0,,,0,120,1\r\n",AT_HTTTP,SERVER_ADDRESS,SERVER_PORT);
-		//send_ATCommand_DMA("AT#HTTPCFG=0,\"larraitz.myruns.com\",80,0,,,0,120,1\r\n");
-	//	send_ATCommand("AT#HTTPCFG=0,\"larraitz.myruns.com\",80,0,,,0,120,1\r\n",1000);
-	//	leerBuffer();
-	//	send_ATCommand_DMA("AT#HTTPSND=0,0,\"/pruebas_post.php\",46,\"application/x-www-form-urlencoded\"\r\n");
-	//	leerBuffer();
-	//	enviar_coordenadas_gprs();
-	//	leerBuffer();
-		send_ATCommand("AT+CMEE=2\r\n",5000);
-		HAL_Delay(5000);
-	//	send_ATCommand("AT+CREG?\r\n",2000);
-	//	read_buffer();
-	//	send_ATCommand("AT+COPS?\r\n",2000);
-	//	read_buffer();
-		send_ATCommand("AT+COPS=4,2,\"42502\"\r\n",5000);
-		HAL_Delay(5000);
-	//	send_ATCommand("AT+CREG?\r\n",2000);
-	//	read_buffer();
-		send_ATCommand("AT+CGDCONT=1,\"IP\",\"internetm2m.air.com\"\r\n",5000);
-		HAL_Delay(5000);
-		send_ATCommand("AT#SGACT=1,1\r\n",10000);
-		HAL_Delay(10000);
+	read_buffer();
+	send_ATCommand("AT\r\n",1000);
+	leerBuffer();
+	while(isOK() != 0)
+	{
+		send_ATCommand("AT\r\n",1000);
+		//imprimir("No hay comunicacion con el GPRS");
+		HAL_Delay(2000);
+		leerBuffer();
 
-		send_ATCommand("AT#HTTPCFG=0,\"larraitz.myruns.com\",80,0,,,0,120,1\r\n",5000);
-		HAL_Delay(5000);
-		send_ATCommand("AT#HTTPSND=0,0,\"/pruebas_post.php\",46,\"application/x-www-form-urlencoded\"\r\n",5000);
-	//	read_buffer();
-		HAL_Delay(10000);
-	//	enviar_coordenadas_gprs();
-		//read_buffer();
-		//HAL_Delay(5000);
-//	}
+	}
 
-
+	network_registration();
 
 
 	//Enviar por Lora
@@ -202,10 +172,9 @@ int main(void) {
 	while (1) {
 		/* Toggle LED2 */
 		BSP_LED_Toggle(LED2);
-		enviar_coordenadas_gprs();
+		HTTP_post();
 		HAL_Delay(5000);
-
-
+		leerBuffer();
 
 	}
 }

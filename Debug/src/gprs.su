@@ -1,5 +1,9 @@
-gprs.c:27:6:send_ATCommand	24	static
-gprs.c:35:5:send_ATCommand_DMA	24	static
-gprs.c:47:6:read_buffer	8	static
-gprs.c:59:6:leerBuffer	8	static
-gprs.c:65:5:isOK	16	static
+gprs.c:35:6:send_ATCommand	24	static
+gprs.c:43:5:send_ATCommand_DMA	24	static
+gprs.c:55:6:read_buffer	8	static
+gprs.c:67:6:leerBuffer	8	static
+gprs.c:72:6:network_registration	8	static
+gprs.c:111:6:HTTP_post	8	static
+gprs.c:128:5:PDPActivated	16	static
+gprs.c:139:5:isOK	16	static
+gprs.c:147:5:init_post	16	static
