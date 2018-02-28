@@ -289,7 +289,7 @@ void enviar_coord_lora(void)
 
 char bufferGPRS[46];
 
-void enviar_coordenadas_gprs(void)
+void enviar_coordenadas_gprs(char *buf)
 {
 
 	int numero = numGPS-1;

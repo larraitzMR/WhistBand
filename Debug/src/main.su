@@ -1,6 +1,6 @@
 main.c:47:5:main	8	static
-main.c:184:6:Write_Flash	16	static
-main.c:200:6:imprimir	16	static
-main.c:211:10:TimeoutCalculation	32	static
-main.c:249:6:SystemClock_Config	88	static
-main.c:302:6:Error_Handler	8	static
+main.c:185:6:Write_Flash	16	static
+main.c:201:6:imprimir	16	static
+main.c:212:10:TimeoutCalculation	32	static
+main.c:250:6:SystemClock_Config	88	static
+main.c:303:6:Error_Handler	8	static

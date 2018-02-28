@@ -20,7 +20,9 @@ uint8_t OK[2] = "OK";
 uint8_t PDP[7] = "#SGACT:";
 uint8_t Post[3] = ">>>";
 uint8_t ACT[15] = "context already";
-uint8_t HTTPPring[16] = "#HTTPRING: 0,200";
+uint8_t HTTPPring200[16] = "#HTTPRING: 0,200";
+uint8_t HTTPPring400[16] = "#HTTPRING: 0,400";
+uint8_t HTTPPring0[14] = "#HTTPRING:  0,0";
 
 
 
@@ -93,6 +95,7 @@ void network_registration(){
 	HAL_Delay(2000);
 
 	send_ATCommand("AT#SGACT=1,1\r\n", 5000);
+	leerBuffer();
 	while(PDPActivated() != 0) {
 		send_ATCommand("AT#SGACT=1,1\r\n", 5000);
 		leerBuffer();
@@ -102,26 +105,19 @@ void network_registration(){
 
 	send_ATCommand("AT#HTTPCFG=0,\"larraitz.myruns.com\",80,0,,,0,120,1\r\n",5000);
 	while (isOK() != 0) {
-		send_ATCommand("AT#HTTPCFG=0,\"larraitz.myruns.com\",80,0,,,0,120,1\r\n",5000);
-		leerBuffer();
-		HAL_Delay(2000);
+//		send_ATCommand("AT#HTTPCFG=0,\"larraitz.myruns.com\",80,0,,,0,120,1\r\n",5000);
+//		leerBuffer();
+//		HAL_Delay(2000);
 	}
 }
 
 void HTTP_post(){
-	send_ATCommand("AT#HTTPSND=0,0,\"/pruebas_post.php\",46,\"application/x-www-form-urlencoded\"\r\n",5000);
-	while (init_post() != 0) {
-		HAL_Delay(500);
-//		leerBuffer();
-	}
+	send_ATCommand("AT#HTTPSND=0,0,\"/pruebas_post.php\",46,\"application/x-www-form-urlencoded\"\r\n",1000);
+	HAL_Delay(5000);
 	enviar_coordenadas_gprs();
-	HAL_Delay(1000);
-	while(!strstr(aRxBuffer,HTTPPring)){
-		send_ATCommand("AT#HTTPSND=0,0,\"/pruebas_post.php\",46,\"application/x-www-form-urlencoded\"\r\n",5000);
-		while (init_post() != 0) {
-			HAL_Delay(500);
-		}
-		enviar_coordenadas_gprs();
+//	HAL_Delay(5000);
+	while(response_OK() != 0){
+		HAL_Delay(10000);
 	}
 
 }
@@ -130,7 +126,7 @@ int PDPActivated(){
 	char* acti = NULL;
 	str = strstr(aRxBuffer,PDP);
 	acti = strstr(aRxBuffer,ACT);
-	if(!str || !acti){
+	if(!(acti || str)){
 		return -1;
 	}
 	//recoger la IP en la que esta registrado
@@ -152,3 +148,35 @@ int init_post(){
 	}
 	return 0;
 }
+
+int response_OK(){
+	char* str = NULL;
+	char* mal = NULL;
+	char* cero = NULL;
+	str = strstr(aRxBuffer, HTTPPring200);
+	mal = strstr(aRxBuffer, HTTPPring400);
+	cero = strstr(aRxBuffer, HTTPPring0);
+
+	while (str || mal || cero)
+	{}
+	if (str) {
+		imprimir("Envio OK\r\n");
+		return 0;
+	} else if (mal) {
+		imprimir("Bad Request\r\n");
+		HAL_Delay(10000);
+		send_ATCommand("AT#HTTPSND=0,0,\"/pruebas_post.php\",46,\"application/x-www-form-urlencoded\"\r\n",5000);
+		HAL_Delay(5000);
+		enviar_coordenadas_gprs();
+		return -1;
+	}
+	else if (cero){
+		imprimir("Envio 0\r\n");
+		HAL_Delay(10000);
+		send_ATCommand("AT#HTTPSND=0,0,\"/pruebas_post.php\",46,\"application/x-www-form-urlencoded\"\r\n",5000);
+		HAL_Delay(5000);
+		enviar_coordenadas_gprs();
+		return -1;
+	}
+}
+

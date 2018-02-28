@@ -2,7 +2,7 @@ gps.c:59:6:inicializar_gps	8	static
 gps.c:97:6:guardar_coordenadas	16	static
 gps.c:113:6:obtener_coordenadas	24	static
 gps.c:240:6:enviar_coord_lora	4	static
-gps.c:292:6:enviar_coordenadas_gprs	32	static
+gps.c:292:6:enviar_coordenadas_gprs	40	static
 gps.c:335:7:formatoLat	96	static
 gps.c:373:7:formatoLong	96	static
 gps.c:413:7:formatoHora	16	static

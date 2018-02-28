@@ -173,8 +173,9 @@ int main(void) {
 		/* Toggle LED2 */
 		BSP_LED_Toggle(LED2);
 		HTTP_post();
-		HAL_Delay(5000);
 		leerBuffer();
+		HAL_Delay(10000);
+
 
 	}
 }
